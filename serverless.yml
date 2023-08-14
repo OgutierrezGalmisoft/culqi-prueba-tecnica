@@ -1,0 +1,48 @@
+service: culqi-token-card-project
+frameworkVersion: '3'
+
+region: us-east-1
+
+provider:
+  name: aws
+  runtime: nodejs18.x
+  environment:
+    DYNAMODB_TABLE : TokenTable
+  iamRoleStatements:
+    - Effect: Allow
+      Action:
+        - dynamodb:*
+      Resource:
+        - arn:aws:dynamodb:us-east-1:094275984805:table/TokenTable 
+
+functions:
+  createToken:
+    handler: app.createToken
+    events:
+      - httpApi:
+          path: /token/create
+          method: post
+  getToken:
+    handler: app.getToken
+    events:
+      - httpApi:
+          path: /token/{token}
+          method: get
+resources:
+  Resources:
+    TokenTable:
+      Type: AWS::DynamoDB::Table
+      Properties:
+        TableName: TokenTable
+        BillingMode: PAY_PER_REQUEST
+        AttributeDefinitions:
+          - AttributeName : token
+            AttributeType : S
+        KeySchema:
+          - AttributeName : token
+            KeyType: HASH
+
+plugins:
+  - serverless-plugin-typescript
+  - serverless-offline
+  - serverless-ignore
